@@ -13,7 +13,7 @@ jobs:
   # Detect docs-only changes to skip heavy jobs (test, build, Windows, macOS, Android).
   # Lint and format always run. Fail-safe: if detection fails, run everything.
   docs-scope:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'ubuntu-latest' }}
     outputs:
       docs_only: ${{ steps.check.outputs.docs_only }}
       docs_changed: ${{ steps.check.outputs.docs_changed }}
@@ -33,7 +33,7 @@ jobs:
   changed-scope:
     needs: [docs-scope]
     if: needs.docs-scope.outputs.docs_only != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'ubuntu-latest' }}
     outputs:
       run_node: ${{ steps.scope.outputs.run_node }}
       run_macos: ${{ steps.scope.outputs.run_macos }}
@@ -123,7 +123,7 @@ jobs:
   build-artifacts:
     needs: [docs-scope, changed-scope, code-analysis, check]
     if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -149,7 +149,7 @@ jobs:
   release-check:
     needs: [docs-scope, build-artifacts]
     if: needs.docs-scope.outputs.docs_only != 'true'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -173,7 +173,7 @@ jobs:
   checks:
     needs: [docs-scope, changed-scope, code-analysis, check]
     if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     strategy:
       fail-fast: false
       matrix:
@@ -204,7 +204,7 @@ jobs:
     name: "check"
     needs: [docs-scope]
     if: needs.docs-scope.outputs.docs_only != 'true'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -221,7 +221,7 @@ jobs:
   check-docs:
     needs: [docs-scope]
     if: needs.docs-scope.outputs.docs_changed == 'true'
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -238,7 +238,7 @@ jobs:
   # On push events, all steps are skipped and the job passes (no-op).
   # Heavy downstream jobs depend on this to fail fast on violations.
   code-analysis:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
       - name: Checkout
         if: github.event_name == 'pull_request'
@@ -266,7 +266,7 @@ jobs:
             --strict
 
   secrets:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -634,7 +634,7 @@ jobs:
   android:
     needs: [docs-scope, changed-scope, code-analysis, check]
     if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_android == 'true')
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.USE_SELF_HOSTED == 'true' && 'enkira-ci-runner' || 'blacksmith-4vcpu-ubuntu-2404' }}
     strategy:
       fail-fast: false
       matrix:
